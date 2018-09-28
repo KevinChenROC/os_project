@@ -1,0 +1,12 @@
+GEM
+  specs:
+    concurrent-ruby (1.0.5)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  concurrent-ruby
+
+BUNDLED WITH
+   1.16.3
