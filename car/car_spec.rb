@@ -1,70 +1,140 @@
 require_relative 'car'
 
-describe Car do
-  let(:west_road){Road.new(Road::DIRECTIONS[:west])}
+describe do
+  let(:west_road){Road.new(WEST)}
   let(:west_car){Car.new(west_road)}
-  let(:east_road){Road.new(Road::DIRECTIONS[:east])}
+  let(:east_road){Road.new(EAST)}
   let(:east_car){Car.new(east_road)}
+
+  before(:each) do
+    west_road.insert_car west_car
+    east_road.insert_car east_car
+    OneWayLane.init_shared_variables
+  end
 
   describe "#new" do
     it {expect(east_car.x_pos).to eq 0}
     it {expect(west_car.x_pos).to eq Road::FULL_LENGTH}
+    it {expect(west_car.direction).to eq WEST}
+    it {expect(east_car.direction).to eq EAST}
   end
 
-  describe "#move_a_unit" do
+  describe "#move_a_unit!" do
     it "eastbound car increases x_pos by ONE_UNIT" do
-      east_road.insert_car(east_car)
-      expect{east_car.move}.to change{east_car.x_pos}.by Car::ONE_UNIT
+      expect{east_car.move!}.to change{east_car.x_pos}.by Car::ONE_UNIT
     end
 
     it "westbound car decreases x_pos by ONE_UNIT" do
-      west_road.insert_car(west_car)
-      expect{west_car.move}.to change{west_car.x_pos}.by -(Car::ONE_UNIT)
+      expect{west_car.move!}.to change{west_car.x_pos}.by -(Car::ONE_UNIT)
     end
 
     it "A car cannot pass its next car" do
-      next_east_car = double("Car", x_pos: 1, direction: Road::DIRECTIONS[:east])
+      next_east_car = double("Car", x_pos: 1, direction: EAST)
       east_road.insert_car(next_east_car)
       east_road.insert_car(east_car)
-      expect{east_car.move}.to change{east_car.x_pos}.by 0
+      expect{east_car.move!}.to change{east_car.x_pos}.by 0
     end
   end
 
-  describe 'An east_car enter one way lane with' do
-    before(:each) do
-      OneWayLane.init_shared_variables
-      allow(east_car).to receive(:x_pos){Road::RANGE_ONE_WAY[0] - Car::ONE_UNIT}
-      allow(west_car).to receive(:x_pos){Road::RANGE_ONE_WAY[1] + Car::ONE_UNIT}
+  describe "#at_the_end_of_road?" do
+    let(:west_car){Car.new(west_road, 0)}
+    let(:east_car){Car.new(east_road, Road::FULL_LENGTH)}
+
+    it{expect(east_car.at_the_end_of_road?).to eq true}
+    it{expect(west_car.at_the_end_of_road?).to eq true}
+  end
+
+  describe 'An east_car enter one way lane' do
+    let(:west_car){Car.new(west_road, Road::RANGE_ONE_WAY[1] + Car::ONE_UNIT)}
+    let(:east_car){Car.new(east_road,Road::RANGE_ONE_WAY[0] - Car::ONE_UNIT)}
+
+    it '#about_to_enter_lane?' do
+      expect(east_car).to receive :enter_lane!
+      expect(west_car).to receive :enter_lane!
+      east_car.move!
+      west_car.move!
     end
+
     it 'no car' do
-      east_car.move
-      expect(OneWayLane.direction_one_way).to eq Road::DIRECTIONS[:east]
-      expect(OneWayLane.east_one_way.locked?).to eq true
-      expect(OneWayLane.capacity_one_way.available_permits) to eq (OneWayLane::MAX_CAPACITY-1)
+      east_car.move!
+      expect(OneWayLane.direction_one_way).to eq EAST
+      expect(OneWayLane.direction_mutex.available_permits).to eq 0
+      expect(OneWayLane.capacity_one_way.available_permits).to eq (OneWayLane::MAX_CAPACITY-1)
+      expect(east_car.x_pos).to be >= Road::RANGE_ONE_WAY[0]
+      expect(east_car.x_pos).to be <= Road::RANGE_ONE_WAY[1]
     end
 
-    it 'one car in same direction' do
-      east_car.move
-      expect(OneWayLane.direction_one_way).to eq Road::DIRECTIONS[:east]
-      expect(OneWayLane.east_one_way.locked?).to eq true
-      expect(OneWayLane.capacity_one_way.available_permits) to eq (OneWayLane::MAX_CAPACITY - 2)
-    end
+    it 'with west_car about to enter at the same time' do
+      expect(OneWayLane.direction_one_way).to eq NO_CAR
 
-    it 'one car in different direction' do
-      west_car.move
-      east_car.move
-      expect(OneWayLane.direction_one_way).to eq Road::DIRECTIONS[:west]
-      expect(OneWayLane.east_one_way.locked?).to eq false
-      expect(OneWayLane.west_one_way.locked?).to eq true
-      expect(OneWayLane.capacity_one_way.available_permits) to eq (OneWayLane::MAX_CAPACITY - 1)
+      east_car.move!
+      t = Thread.new{west_car.move!}
+      t.join(0.5) #t will be blocked, so set a limit
+      expect(t.status).to eq 'sleep'
+
+      expect(OneWayLane.direction_one_way).to eq EAST
+      expect(OneWayLane.direction_mutex.available_permits).to eq 0
+      expect(OneWayLane.capacity_one_way.available_permits).to eq (OneWayLane::MAX_CAPACITY - 1)
+      expect(east_car.x_pos).to be >= Road::RANGE_ONE_WAY[0]
+      expect(west_car.x_pos).to be > Road::RANGE_ONE_WAY[1]
     end
   end
 
-  describe 'An east_car leave one way lane with' do
+  describe 'An east_car leaves one way lane with' do
+    let(:east_car){Car.new(east_road,Road::RANGE_ONE_WAY[1] - Car::ONE_UNIT)}
+    let(:west_car){Car.new(west_road,Road::RANGE_ONE_WAY[1] + Car::ONE_UNIT)}
 
-  end
+    before do
+      OneWayLane.direction_one_way = EAST
+      OneWayLane.direction_mutex.acquire
+      OneWayLane.capacity_one_way.acquire
+    end
 
-  describe "when west and east cars are to enter enter_one_way_lane" do
+    it '#about_to_leave_lane?' do
+      expect(east_car).to receive :leave_lane!
+      east_car.move!
+    end
+
+    it 'no cars left' do
+      east_car.move!
+
+      expect(OneWayLane.direction_one_way).to eq NO_CAR
+      expect(OneWayLane.direction_mutex.available_permits).to eq 1
+      expect(OneWayLane.capacity_one_way.available_permits).to eq OneWayLane::MAX_CAPACITY
+      expect(east_car.x_pos).to be >= Road::RANGE_ONE_WAY[1]
+    end
+
+    it 'one car left' do
+      car = Car.new(east_road, Road::RANGE_ONE_WAY[0] - Car::ONE_UNIT)
+      east_road.insert_car(car)
+      car.move!
+      east_car.move!
+
+      expect(OneWayLane.direction_one_way).to eq EAST
+      expect(OneWayLane.direction_mutex.available_permits).to eq 0
+      expect(OneWayLane.capacity_one_way.available_permits).to eq (OneWayLane::MAX_CAPACITY - 1)
+      expect(east_car.x_pos).to be >= Road::RANGE_ONE_WAY[1]
+    end
+
+    it 'one west_car about to enter' do
+      t_east_car = Thread.new{east_car.move!;}
+      t_west_car = Thread.new do
+        2.times{west_car.move!}
+        expect(OneWayLane.direction_one_way).to eq WEST
+        expect(OneWayLane.direction_mutex.available_permits).to eq 0
+        expect(OneWayLane.capacity_one_way.available_permits).to eq (OneWayLane::MAX_CAPACITY - 1)
+
+        expect(east_car.x_pos).to be >= Road::RANGE_ONE_WAY[1]
+        expect(west_car.x_pos).to be <= Road::RANGE_ONE_WAY[1]
+      end
+      t_west_car.join
+      t_east_car.join
+    end
+
+    #TODO
+    it 'another east car about to enter' do
+
+    end
 
   end
 

@@ -1,7 +1,9 @@
 require 'Concurrent'
+NO_CAR = 'no car'
+WEST = 'west'
+EAST = 'east'
 
 class Road
-  DIRECTIONS =  {no_car: 'no_car', east: 'east', west: 'west'}
   RANGE_ONE_WAY = [5,10]
   FULL_LENGTH = 14.freeze
   NO_NEXT_CAR = FULL_LENGTH * 10
@@ -34,7 +36,7 @@ class Road
   def get_next_car(car)
     i = @cars.index(car)
     if i == nil
-      raise ArgumentError, "Car NOT Found"
+      raise ArgumentError, "#get_next_car: Car NOT FOUND"
     else
       @cars[i+1]
     end
@@ -44,14 +46,14 @@ end
 class OneWayLane
   MAX_CAPACITY = 5
   class << self
-    attr_accessor :west_one_way, :east_one_way, :capacity_one_way, :direction_one_way
+    attr_accessor :capacity_one_way, :direction_one_way, :direction_mutex
 
-    #instance variabes for self object, which is 'OneWayLane' class object
     def init_shared_variables
-      @west_one_way = Mutex.new
-      @east_one_way = Mutex.new
+      @direction_mutex = Concurrent::Semaphore.new(1)
       @capacity_one_way = Concurrent::Semaphore.new(MAX_CAPACITY)
-      @direction_one_way = Road::DIRECTIONS[:no_car] #need ReadWriteLock
+      @direction_one_way = NO_CAR #need ReadWriteLock
     end
+
+    #TODO I need public api for direction_mutex and capacity_one_way to see their status
   end
 end

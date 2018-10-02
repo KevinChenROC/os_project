@@ -2,7 +2,7 @@ require_relative 'road'
 
 describe Road do
   NUM_OF_CARS = 3
-  let(:west_road){Road.new(Road::DIRECTIONS[:west])}
+  let(:west_road){Road.new(WEST)}
 
   before(:each) do
     (1..NUM_OF_CARS).each do |i|
@@ -12,7 +12,7 @@ describe Road do
   end
 
   it ".initialize" do
-    expect(west_road.direction).to eq Road::DIRECTIONS[:west]
+    expect(west_road.direction).to eq WEST
     expect(west_road.cars.length).to be NUM_OF_CARS
   end
 

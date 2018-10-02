@@ -10,7 +10,7 @@ def simulation
 
         while(true) do
           sleep(0.5)
-          car.move
+          car.move!
           break if car.at_end?
         end
       end
