@@ -45,7 +45,7 @@ end
 
 class OneWayLane
   MAX_CAPACITY = 5
-  class << self
+class << self
     attr_accessor :capacity_one_way, :direction_one_way, :direction_mutex
 
     def init_shared_variables
@@ -54,6 +54,10 @@ class OneWayLane
       @direction_one_way = NO_CAR #need ReadWriteLock
     end
 
+    def direction_locked?
+      OneWayLane.direction_mutex.available_permits == 0
+    end
+
     #TODO I need public api for direction_mutex and capacity_one_way to see their status
-  end
+end
 end

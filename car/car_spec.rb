@@ -58,7 +58,7 @@ describe do
     it 'no car' do
       east_car.move!
       expect(OneWayLane.direction_one_way).to eq EAST
-      expect(OneWayLane.direction_mutex.available_permits).to eq 0
+      expect(OneWayLane.direction_locked?).to eq true
       expect(OneWayLane.capacity_one_way.available_permits).to eq (OneWayLane::MAX_CAPACITY-1)
       expect(east_car.x_pos).to be >= Road::RANGE_ONE_WAY[0]
       expect(east_car.x_pos).to be <= Road::RANGE_ONE_WAY[1]
@@ -73,7 +73,7 @@ describe do
       expect(t.status).to eq 'sleep'
 
       expect(OneWayLane.direction_one_way).to eq EAST
-      expect(OneWayLane.direction_mutex.available_permits).to eq 0
+      expect(OneWayLane.direction_locked?).to eq true
       expect(OneWayLane.capacity_one_way.available_permits).to eq (OneWayLane::MAX_CAPACITY - 1)
       expect(east_car.x_pos).to be >= Road::RANGE_ONE_WAY[0]
       expect(west_car.x_pos).to be > Road::RANGE_ONE_WAY[1]
@@ -99,7 +99,7 @@ describe do
       east_car.move!
 
       expect(OneWayLane.direction_one_way).to eq NO_CAR
-      expect(OneWayLane.direction_mutex.available_permits).to eq 1
+      expect(OneWayLane.direction_locked?).to eq false
       expect(OneWayLane.capacity_one_way.available_permits).to eq OneWayLane::MAX_CAPACITY
       expect(east_car.x_pos).to be >= Road::RANGE_ONE_WAY[1]
     end
@@ -111,7 +111,7 @@ describe do
       east_car.move!
 
       expect(OneWayLane.direction_one_way).to eq EAST
-      expect(OneWayLane.direction_mutex.available_permits).to eq 0
+      expect(OneWayLane.direction_locked?).to eq true
       expect(OneWayLane.capacity_one_way.available_permits).to eq (OneWayLane::MAX_CAPACITY - 1)
       expect(east_car.x_pos).to be >= Road::RANGE_ONE_WAY[1]
     end
@@ -121,7 +121,7 @@ describe do
       t_west_car = Thread.new do
         2.times{west_car.move!}
         expect(OneWayLane.direction_one_way).to eq WEST
-        expect(OneWayLane.direction_mutex.available_permits).to eq 0
+        expect(OneWayLane.direction_locked?).to eq true
         expect(OneWayLane.capacity_one_way.available_permits).to eq (OneWayLane::MAX_CAPACITY - 1)
 
         expect(east_car.x_pos).to be >= Road::RANGE_ONE_WAY[1]
