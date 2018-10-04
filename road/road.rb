@@ -1,12 +1,12 @@
-require 'Concurrent'
+require 'concurrent'
 NO_CAR = 'no car'
 WEST = 'west'
 EAST = 'east'
 
 class Road
-  RANGE_ONE_WAY = [5,10]
-  FULL_LENGTH = 14.freeze
-  NO_NEXT_CAR = FULL_LENGTH * 10
+  RANGE_ONE_WAY = [5,10].freeze
+  FULL_LENGTH = 14
+  NO_NEXT_CAR = FULL_LENGTH * 100
 
   attr_reader :direction, :cars
 
@@ -44,8 +44,8 @@ class Road
 end
 
 class OneWayLane
-  MAX_CAPACITY = 5
-class << self
+  MAX_CAPACITY = (Road::RANGE_ONE_WAY[1] - Road::RANGE_ONE_WAY[0] - 1).freeze
+  class << self
     attr_accessor :capacity_one_way, :direction_one_way, :direction_mutex
 
     def init_shared_variables
@@ -59,5 +59,5 @@ class << self
     end
 
     #TODO I need public api for direction_mutex and capacity_one_way to see their status
-end
+  end
 end

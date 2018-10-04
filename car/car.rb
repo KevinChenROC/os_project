@@ -3,12 +3,14 @@ require_relative '../road/road.rb'
 class Car
   ONE_UNIT = 1
   @@lock = Concurrent::ReentrantReadWriteLock.new
+  @@id_count = 1
 
-  attr_reader :x_pos, :direction
+  attr_reader :x_pos, :direction, :id
 
   def initialize(road, x_pos=nil)
     @road = road #the road where the car moves
     @direction = road.direction
+    @id = @@id_count
 
     if x_pos != nil
       @x_pos = x_pos
@@ -40,6 +42,10 @@ class Car
     else
       @x_pos >= Road::FULL_LENGTH
     end
+  end
+
+  def print_car_pos
+    puts "#{@id} car x_pos = #{@x_pos}\n"
   end
 
   private
@@ -76,38 +82,41 @@ class Car
   end
 
   def enter_lane!
-    set_new_lane_direction if OneWayLane.capacity_one_way.available_permits == OneWayLane::MAX_CAPACITY
-
+    set_lane_direction_with_lock
     if OneWayLane.direction_one_way == @direction
       if OneWayLane.direction_locked?
         OneWayLane.capacity_one_way.acquire
         move_a_unit!
       end
-    elsif OneWayLane.direction_one_way != NO_CAR
+    end
+
+    if OneWayLane.direction_one_way != @direction && OneWayLane.direction_one_way != NO_CAR
       wait_for_the_other_direction
     end
   end
 
   def leave_lane!
     move_a_unit!
-    OneWayLane.capacity_one_way.release
-    reset_lane_direction
+    @@lock.with_write_lock{OneWayLane.capacity_one_way.release}
+    reset_lane_direction_with_lock
   end
 
-  def set_new_lane_direction
-    set_lane_direction_with_lock(@direction) if OneWayLane.direction_one_way == NO_CAR
-    OneWayLane.direction_mutex.acquire if OneWayLane.direction_locked? == false
-  end
-
-  def reset_lane_direction
-    if OneWayLane.capacity_one_way.available_permits == OneWayLane::MAX_CAPACITY
-      set_lane_direction_with_lock NO_CAR
-      OneWayLane.direction_mutex.release until OneWayLane.direction_locked? == false
+  def set_lane_direction_with_lock
+    @@lock.with_write_lock do
+      if OneWayLane.direction_one_way == NO_CAR && OneWayLane.capacity_one_way.available_permits >= OneWayLane::MAX_CAPACITY
+        OneWayLane.direction_one_way = @direction
+      end
+      OneWayLane.direction_mutex.acquire if OneWayLane.direction_locked? == false
     end
   end
 
-  def set_lane_direction_with_lock(direction)
-    @@lock.with_write_lock{OneWayLane.direction_one_way = direction}
+  def reset_lane_direction_with_lock
+    @@lock.with_write_lock do
+      if (OneWayLane.direction_one_way != NO_CAR) && (OneWayLane.capacity_one_way.available_permits == OneWayLane::MAX_CAPACITY)
+        OneWayLane.direction_one_way = NO_CAR
+        OneWayLane.direction_mutex.release until OneWayLane.direction_locked? == false
+      end
+    end
   end
 
   def wait_for_the_other_direction
