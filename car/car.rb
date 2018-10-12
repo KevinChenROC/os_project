@@ -79,12 +79,17 @@ class Car
     else
       raise NameError, "#move_a_unit!: Invalid Direction"
     end
+    # DEBUG:
+    # print_car_pos
   end
 
   def enter_lane!
     set_lane_direction_with_lock
+
     if OneWayLane.direction_one_way == @direction
       if OneWayLane.direction_locked?
+        # DEBUG:
+        # puts "before acquire..."
         OneWayLane.capacity_one_way.acquire
         move_a_unit!
       end

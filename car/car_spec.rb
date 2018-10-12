@@ -90,7 +90,6 @@ describe Car do
     end
 
     it 'with MAX_CAPACITY eastbound cars in the lane' do
-      OneWayLane.init_shared_variables
       east_road.remove_car east_car #because it's the leftmost car
       car_to_enter = east_car
       threads = []
@@ -121,7 +120,6 @@ describe Car do
     end
 
     it "with MAX_CAPACITY westbound cars in the lane " do
-      OneWayLane.init_shared_variables
       threads = []
 
       OneWayLane.direction_one_way = WEST
@@ -151,7 +149,7 @@ describe Car do
 
   end
 
-  describe 'An east_car leaves one way lane with' do
+  describe 'An east_car about to leave the lane with' do
     let(:east_car){Car.new(east_road,Road::RANGE_ONE_WAY[1] - Car::ONE_UNIT)}
     let(:west_car){Car.new(west_road,Road::RANGE_ONE_WAY[1] + Car::ONE_UNIT)}
 
@@ -175,16 +173,19 @@ describe Car do
       expect(east_car.x_pos).to be >= Road::RANGE_ONE_WAY[1]
     end
 
-    it 'one east_car in the lane' do
-      car = Car.new(east_road, Road::RANGE_ONE_WAY[0] - Car::ONE_UNIT)
-      east_road.insert_car(car)
-      car.move!
-      east_car.move!
+    it 'another east_car about to join the lane' do
+      another_car = Car.new(east_road, Road::RANGE_ONE_WAY[0] - Car::ONE_UNIT)
+      east_road.insert_car(another_car)
+      threads = []
+
+      threads << Thread.new{another_car.move! until another_car.x_pos > Road::RANGE_ONE_WAY[0]}
+      threads << Thread.new{east_car.move! until east_car.at_the_end_of_road?}
+      threads.each(&:join)
 
       expect(OneWayLane.direction_one_way).to eq EAST
       expect(OneWayLane.direction_locked?).to eq true
       expect(OneWayLane.capacity_one_way.available_permits).to eq (OneWayLane::MAX_CAPACITY - 1)
-      expect(east_car.x_pos).to be >= Road::RANGE_ONE_WAY[1]
+      expect(another_car.x_pos).to be > Road::RANGE_ONE_WAY[0]
     end
 
     it 'one west_car about to enter' do
@@ -202,6 +203,7 @@ describe Car do
       t_east_car.join
     end
 
+    # NOTE: A redundant test
     it 'another east car about to enter' do
       car_to_enter = Car.new(east_road, Road::RANGE_ONE_WAY[0] - Car::ONE_UNIT)
       east_road.insert_car car_to_enter
