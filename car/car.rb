@@ -11,6 +11,7 @@ class Car
     @road = road #the road where the car moves
     @direction = road.direction
     @id = @@id_count
+    @@id_count += 1
 
     if x_pos != nil
       @x_pos = x_pos
@@ -45,7 +46,7 @@ class Car
   end
 
   def print_car_pos
-    puts "#{@id} car x_pos = #{@x_pos}\n"
+    puts "#{@direction} car, id = #{@id}, x_pos = #{@x_pos}\n"
   end
 
   private

@@ -1,24 +1,22 @@
 #0. run some simulation using random
 #1. Do text ui
 #2. do gui with SHOES!
+require_relative "car/car_maker"
+require_relative "car/car.rb"
+require_relative "road/road.rb"
+require_relative "views/ui_renderer.rb"
 
-# def simulation
-#   init_variables
-#   poission_process = Thread.new do
-#     for_a_period_of_time_do_the_following do
-#       t = Thread.new do
-#         car = Car.new
-#         #put car into east or west_road
-#
-#         while(true) do
-#           sleep(0.5)
-#           car.move!
-#           break if car.at_end?
-#         end
-#       end
-#       t.start
-#     end
-#   end
-#   poission_process.start #daemon for simulation
-#   render_gui
-# end
+UPDATE_UI_RATE = 0.5
+
+def simulation
+  roads = {WEST => Road.new(WEST), EAST => Road.new(EAST)}
+
+  Thread.new{CarMaker.make_car_threads(roads);}.join
+
+  while(true) do
+    sleep UPDATE_UI_RATE
+    UiRenderer.render_ui(roads)
+  end
+end
+
+simulation
