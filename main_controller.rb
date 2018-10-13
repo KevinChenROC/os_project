@@ -6,17 +6,17 @@ require_relative "car/car.rb"
 require_relative "road/road.rb"
 require_relative "views/ui_renderer.rb"
 
-UPDATE_UI_RATE = 0.5
+DAEMON_RUNNING_LIMI = 1
 
 def simulation
+  OneWayLane.init_shared_variables
   roads = {WEST => Road.new(WEST), EAST => Road.new(EAST)}
 
-  Thread.new{CarMaker.make_car_threads(roads);}.join
+  CarMaker.new_car_maker_daemon!(roads).join(DAEMON_RUNNING_LIMI)
+  UiRenderer.new_ui_render_daemon!(roads).join
 
-  while(true) do
-    sleep UPDATE_UI_RATE
-    UiRenderer.render_ui(roads)
-  end
+  #   # CarMaker.make_an_car_thread!(roads)
+  # end
 end
 
 simulation
