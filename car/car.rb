@@ -2,6 +2,7 @@ require_relative '../road/road.rb'
 
 class Car
   ONE_UNIT = 1
+  TIME_TO_WAIT_NEXT_CAR = 0.2
   @@lock = Concurrent::ReentrantReadWriteLock.new
   @@id_count = 1
 
@@ -27,7 +28,10 @@ class Car
     end
   end
 
+  #NOTE A car can't pass its next car. Return if dist is too close
   def move!
+    return if @road.dist_btw_next_car(self) <= ONE_UNIT
+
     if about_to_enter_lane?
       enter_lane!
     elsif about_to_leave_lane?
@@ -71,8 +75,6 @@ class Car
   end
 
   def move_a_unit!
-    return if @road.dist_btw_next_car(self) <= ONE_UNIT
-
     if @direction == WEST
       @x_pos -= ONE_UNIT
     elsif @direction == EAST
@@ -80,8 +82,6 @@ class Car
     else
       raise NameError, "#move_a_unit!: Invalid Direction"
     end
-    # DEBUG:
-    # print_car_pos
   end
 
   def enter_lane!

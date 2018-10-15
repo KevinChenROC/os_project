@@ -21,7 +21,14 @@ module UiRenderer
         print_car_pos car
       end
     end
+    print_one_way_lane
     puts "\n\n***************************************\n"
+  end
+
+  def self.print_one_way_lane
+    puts "\n\nCapacity= #{OneWayLane.capacity_one_way.available_permits}"
+    puts "direction_mutex lock = #{OneWayLane.direction_locked?}"
+    puts "Direction One Way  = #{OneWayLane.direction_one_way}"
   end
 
   def self.print_car_pos(car)

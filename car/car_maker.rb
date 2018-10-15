@@ -1,8 +1,8 @@
 require_relative '../road/road.rb'
 
 MAX_NUM_CARS = 9;
-MAKE_CAR_INTERVAL = (1 .. 3)
-MOVE_CAR_FACTOR = 0.3
+MAKE_CAR_INTERVAL = (3 .. 5)
+MOVE_CAR_FACTOR = 0.4
 
 class CarMaker
 
