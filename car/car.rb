@@ -45,8 +45,8 @@ class Car
     end
   end
 
-  def print_car_pos
-    puts "#{@direction} car, id = #{@id}, x_pos = #{@x_pos}\n"
+  def in_one_way_lane?
+    (@x_pos >= Road::RANGE_ONE_WAY[0] && @x_pos <= Road::RANGE_ONE_WAY[1]) ? true : false
   end
 
   private

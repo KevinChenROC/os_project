@@ -1,13 +1,14 @@
 require_relative '../road/road.rb'
 
 MAX_NUM_CARS = 9;
-MAKE_CAR_INTERVAL = (1 .. 1.5)
-MOVE_CAR_INTERVAL = (0.7 .. 1.1)
+MAKE_CAR_INTERVAL = (1 .. 3)
+MOVE_CAR_FACTOR = 0.3
 
 class CarMaker
-  @@prng = Random.new
 
   def self.new_car_maker_daemon!(roads)
+    @@prng = Random.new
+    @@num_car = 0
     Thread.new do
       while(true) do
         CarMaker.make_an_car_thread!(roads)
@@ -18,7 +19,10 @@ class CarMaker
 
   private
   def self.make_an_car_thread!(roads)
-    @@prng.rand(2) == 0 ? make_car_thread_for!(roads[WEST]) : make_car_thread_for!(roads[EAST])
+    if @@num_car < MAX_NUM_CARS
+      @@num_car += 1
+      @@prng.rand(2) == 0 ? make_car_thread_for!(roads[WEST]) : make_car_thread_for!(roads[EAST])
+    end
   end
 
   def self.make_car_thread_for!(road)
@@ -27,9 +31,10 @@ class CarMaker
       road.insert_car car
       until car.at_the_end_of_road?
         car.move!
-        sleep @@prng.rand(MAKE_CAR_INTERVAL)
+        sleep (@@prng.rand(MAKE_CAR_INTERVAL) * MOVE_CAR_FACTOR)
       end
       road.remove_car car
+      @@num_car -= 1
     end
     t.run
   end

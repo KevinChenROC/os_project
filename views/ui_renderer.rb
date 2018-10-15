@@ -12,14 +12,24 @@ module UiRenderer
 
   private
   def self.render_ui(roads)
+    puts "\n\n***************************************\n"
     roads.each do |_,road|
-      puts "------------------------------------\n"
+      puts "\n--------------#{road.direction} road--------------------"
       road.cars.each do |car|
         raise "car is nil" unless car.class == Car
         raise "road is nil" unless road.class == Road
-        car.print_car_pos
+        print_car_pos car
       end
     end
+    puts "\n\n***************************************\n"
+  end
+
+  def self.print_car_pos(car)
+    str = "#{car.direction}_car, @id = #{car.id}, @x_pos = #{car.x_pos}."
+    if car.in_one_way_lane?
+      str += " In one way lane."
+    end
+    puts str
   end
 
 end

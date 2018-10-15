@@ -25,7 +25,7 @@ describe Car do
     end
 
     it "westbound car decreases x_pos by ONE_UNIT" do
-      expect{west_car.move!}.to change{west_car.x_pos}.by -(Car::ONE_UNIT)
+      expect{west_car.move!}.to change{west_car.x_pos}.by (-Car::ONE_UNIT)
     end
 
     it "A car cannot pass its next car" do
@@ -157,6 +157,14 @@ describe Car do
       OneWayLane.direction_one_way = EAST
       OneWayLane.direction_mutex.acquire
       OneWayLane.capacity_one_way.acquire
+    end
+
+    it "#in_one_way_lane?" do
+      expect(east_car.in_one_way_lane?).to eq true
+      expect(west_car.in_one_way_lane?).to eq false
+      east_car.move!
+      west_car.move!
+      expect(west_car.in_one_way_lane?).to eq true
     end
 
     it '#about_to_leave_lane?' do
