@@ -28,7 +28,7 @@ class Car
     end
   end
 
-  #NOTE A car can't pass its next car. Return if dist is too close
+  #NOTE A car can't pass its next car. move! return if dist is too close
   def move!
     return if @road.dist_btw_next_car(self) <= ONE_UNIT
 
@@ -89,8 +89,6 @@ class Car
 
     if OneWayLane.direction_one_way == @direction
       if OneWayLane.direction_locked?
-        # DEBUG:
-        # puts "before acquire..."
         OneWayLane.capacity_one_way.acquire
         move_a_unit!
       end

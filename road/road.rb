@@ -4,15 +4,15 @@ WEST = 'west'
 EAST = 'east'
 
 class Road
-  RANGE_ONE_WAY = [5,10].freeze
-  FULL_LENGTH = 14
+  RANGE_ONE_WAY = [6,9].freeze
+  FULL_LENGTH = 15
   NO_NEXT_CAR = FULL_LENGTH * 100
 
   attr_reader :direction, :cars
 
   def initialize(direction)
     @direction = direction
-    @cars = [] #make a new list
+    @cars = []
   end
 
   def insert_car(car) #insert the new car to the head
@@ -51,13 +51,11 @@ class OneWayLane
     def init_shared_variables
       @direction_mutex = Concurrent::Semaphore.new(1)
       @capacity_one_way = Concurrent::Semaphore.new(MAX_CAPACITY)
-      @direction_one_way = NO_CAR #need ReadWriteLock
+      @direction_one_way = NO_CAR
     end
 
     def direction_locked?
       OneWayLane.direction_mutex.available_permits == 0
     end
-
-    #TODO I need public api for direction_mutex and capacity_one_way to see their status
   end
 end

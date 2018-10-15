@@ -1,5 +1,5 @@
 module UiRenderer
-  UPDATE_UI_RATE = 1
+  UPDATE_UI_RATE = 0.7
 
   def self.new_ui_render_daemon!(roads)
     Thread.new do
