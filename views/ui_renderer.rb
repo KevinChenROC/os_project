@@ -4,7 +4,7 @@ module UiRenderer
   def self.new_ui_render_daemon!(roads)
     Thread.new do
       while true
-        UiRenderer.render_ui roads
+        render_ui roads
         sleep UPDATE_UI_RATE
       end
     end
