@@ -10,7 +10,7 @@ def simulation
   roads = {WEST => Road.new(WEST), EAST => Road.new(EAST)}
 
   CarMaker.new_car_maker_daemon!(roads).join(DAEMON_RUNNING_LIMI)
-  UiRenderer.new_ui_render_daemon!(roads).join
+  UiRenderer.main!(roads)
 end
 
 simulation

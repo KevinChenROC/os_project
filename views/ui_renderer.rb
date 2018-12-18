@@ -1,42 +1,32 @@
-module UiRenderer
+require "gtk3"
+
+class UiRenderer
   UPDATE_UI_RATE = 0.7
 
-  def self.new_ui_render_daemon!(roads)
-    Thread.new do
-      while true
-        render_ui roads
-        sleep UPDATE_UI_RATE
-      end
-    end
+  def self.main!(roads)
+    init_gui
   end
 
   private
-  def self.render_ui(roads)
-    puts "\n\n***************************************\n"
-    roads.each do |_,road|
-      puts "\n--------------#{road.direction} road--------------------"
-      road.cars.each do |car|
-        raise "car is nil" unless car.class == Car
-        raise "road is nil" unless road.class == Road
-        print_car_pos car
-      end
-    end
-    print_one_way_lane
-    puts "\n\n***************************************\n"
-  end
+  def self.init_gui()
 
-  def self.print_one_way_lane
-    puts "\n\nCapacity= #{OneWayLane.capacity_one_way.available_permits}"
-    puts "direction_mutex lock = #{OneWayLane.direction_locked?}"
-    puts "Direction One Way  = #{OneWayLane.direction_one_way}"
-  end
+    button = Gtk::Button.new("Hello World")
+    button.signal_connect("clicked") {
+      puts "Hello World"
+    }
 
-  def self.print_car_pos(car)
-    str = "#{car.direction}_car, @id = #{car.id}, @x_pos = #{car.x_pos}."
-    if car.in_one_way_lane?
-      str += " In one way lane."
-    end
-    puts str
+    window = Gtk::Window.new
+
+    window.signal_connect("destroy") {
+      puts "destroy event occurred"
+      Gtk.main_quit
+    }
+
+    window.border_width = 10
+    window.add(button)
+    window.show_all
+
+    Gtk.main
   end
 
 end
