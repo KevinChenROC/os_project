@@ -1,6 +1,7 @@
 require "gtk2"
 require "glib"
 require_relative "setting.rb"
+require_relative "../road/road.rb"
 require_relative "draw_road_util.rb"
 require_relative "draw_car_util.rb"
 
@@ -25,7 +26,18 @@ class UiRenderer
 
   private
   def self.draw_cars(area,cars)
-    cars.each{|car| DrawCarUtil.draw_car!(area,car)}
+    gc = Gdk::GC.new(area.window)
+
+    cars.each do |car|
+      if(car.direction == WEST)
+        gc.set_rgb_fg_color Gdk::Color.parse("Blue")
+      elsif(car.direction == EAST)
+        gc.set_rgb_fg_color Gdk::Color.parse("Red")
+      else
+        raise ArgumentError, "UiRenderer::draw_car. Invalid direction"
+      end
+      DrawCarUtil.draw_car!(gc,area,car)
+    end
   end
 
   def self.draw_roads(area,roads)
