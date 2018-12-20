@@ -35,7 +35,8 @@ class UiRenderer
     gc.set_line_attributes(line_width, Gdk::GC::LINE_SOLID, Gdk::GC::CAP_BUTT,Gdk::GC::JOIN_MITER)
 
     #upper line
-    area.window.draw_lines(gc, DrawRoadUtil.upper_line_points())
+    DrawRoadUtil.draw_upper_line!(gc,area)
+    DrawRoadUtil.draw_mid_line!(gc,area)
     #mid left line
     #lower lef line
   end
