@@ -1,7 +1,8 @@
 require "gtk2"
 require "glib"
-require_relative "../road/road.rb"
+require_relative "setting.rb"
 require_relative "draw_road_util.rb"
+require_relative "draw_car_util.rb"
 
 class UiRenderer
   UPDATE_UI_RATE = 0.7
@@ -10,8 +11,8 @@ class UiRenderer
     window = Gtk::Window.new
     window.signal_connect("destroy") { Gtk.main_quit }
     window.set_size_request(
-      DrawRoadUtil::WINDOW_WIDTH,
-      DrawRoadUtil::WINDOW_HEIGHT)
+      Setting::WINDOW_WIDTH,
+      Setting::WINDOW_HEIGHT)
 
     area = Gtk::DrawingArea.new
     area.signal_connect('expose_event'){expose_handler(area, roads)}
@@ -24,6 +25,7 @@ class UiRenderer
 
   private
   def self.draw_cars(area,cars)
+    cars.each{|car| DrawCarUtil.draw_car!(area,car)}
   end
 
   def self.draw_roads(area,roads)
