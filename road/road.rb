@@ -4,8 +4,8 @@ WEST = 'west'
 EAST = 'east'
 
 class Road
-  RANGE_ONE_WAY = [6,9].freeze
   FULL_LENGTH = 15
+  RANGE_ONE_WAY = [FULL_LENGTH/3,FULL_LENGTH*2/3].freeze
   NO_NEXT_CAR = FULL_LENGTH * 100
 
   attr_reader :direction, :cars

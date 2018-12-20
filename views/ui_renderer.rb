@@ -1,32 +1,49 @@
-require "gtk3"
+require "gtk2"
+require "glib"
+require_relative "../road/road.rb"
+require_relative "draw_road_util.rb"
 
 class UiRenderer
   UPDATE_UI_RATE = 0.7
 
   def self.main!(roads)
-    init_gui
-  end
-
-  private
-  def self.init_gui()
-
-    button = Gtk::Button.new("Hello World")
-    button.signal_connect("clicked") {
-      puts "Hello World"
-    }
-
     window = Gtk::Window.new
+    window.signal_connect("destroy") { Gtk.main_quit }
+    window.set_size_request(
+      DrawRoadUtil::WINDOW_WIDTH,
+      DrawRoadUtil::WINDOW_HEIGHT)
 
-    window.signal_connect("destroy") {
-      puts "destroy event occurred"
-      Gtk.main_quit
-    }
+    area = Gtk::DrawingArea.new
+    area.signal_connect('expose_event'){expose_handler(area, roads)}
+    GLib::Timeout.add_seconds(UPDATE_UI_RATE){area.queue_draw()}
 
-    window.border_width = 10
-    window.add(button)
+    window.add(area);
     window.show_all
-
     Gtk.main
   end
 
+  private
+  def self.draw_cars(area,cars)
+  end
+
+  def self.draw_roads(area,roads)
+    line_width = 3
+
+    gc = Gdk::GC.new(area.window)
+    #set GC attributes
+    gc.set_rgb_fg_color Gdk::Color.parse("DarkSlateGray")
+    gc.set_line_attributes(line_width, Gdk::GC::LINE_SOLID, Gdk::GC::CAP_BUTT,Gdk::GC::JOIN_MITER)
+
+    #upper line
+    area.window.draw_lines(gc, DrawRoadUtil.upper_line_points())
+    #mid left line
+    #lower lef line
+  end
+
+  def self.expose_handler(area, roads)
+    draw_roads(area,roads)
+    roads.each do |_,road|
+      draw_cars(area,road.cars)
+    end
+  end
 end
