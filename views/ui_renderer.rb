@@ -34,11 +34,10 @@ class UiRenderer
     gc.set_rgb_fg_color Gdk::Color.parse("DarkSlateGray")
     gc.set_line_attributes(line_width, Gdk::GC::LINE_SOLID, Gdk::GC::CAP_BUTT,Gdk::GC::JOIN_MITER)
 
-    #upper line
+    #draw road
     DrawRoadUtil.draw_upper_line!(gc,area)
     DrawRoadUtil.draw_mid_line!(gc,area)
-    #mid left line
-    #lower lef line
+    DrawRoadUtil.draw_lower_line!(gc,area)
   end
 
   def self.expose_handler(area, roads)

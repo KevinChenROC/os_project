@@ -56,5 +56,22 @@ module DrawRoadUtil
     area.window.draw_lines(gc, points)
   end
 
+  def self.draw_lower_line!(gc,area)
+    y1 = SRC_Y + 2*CAR_FULL_W
+    lane_x1 = SRC_X + ROAD_W
+    lane_y1 = y1 - CAR_PADDING
+    lane_x2 = lane_x1 + LANE_W
+
+  points =  [
+      [SRC_X, y1],
+      [lane_x1, y1],
+      [lane_x1, lane_y1],
+      [lane_x2, lane_y1],
+      [lane_x2, y1],
+      [lane_x2 + ROAD_W,y1]
+    ]
+
+    area.window.draw_lines(gc, points)
+  end
 
 end
